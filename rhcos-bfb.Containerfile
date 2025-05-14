@@ -49,7 +49,7 @@ RUN if file ${D_OFED_SRC_ARCHIVE} | grep compressed; then \
   fi
 
 RUN set -x && \
-  ${OFED_SRC_LOCAL_DIR}/install.pl --without-depcheck --distro rhcos --kernel ${D_KERNEL_VER} --kernel-sources /lib/modules/${D_KERNEL_VER}/build \
+  perl -d ${OFED_SRC_LOCAL_DIR}/install.pl --without-depcheck --distro rhcos --kernel ${D_KERNEL_VER} --kernel-sources /lib/modules/${D_KERNEL_VER}/build \
   --kernel-only --build-only \
   --with-iser --with-srp --with-isert --with-knem --with-xpmem --fwctl \
   --with-mlnx-tools --with-ofed-scripts --copy-ifnames-udev
