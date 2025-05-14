@@ -33,7 +33,6 @@ spec:
     value: argfile.conf
   - name: build-platforms
     value:
-      - linux/amd64
       - linux/arm64
   pipelineSpec:
     description: |
