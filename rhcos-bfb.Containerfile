@@ -26,7 +26,7 @@ ARG D_SOC_BASE_URL="https://linux.mellanox.com/public/repo/doca/${D_DOCA_VERSION
 RUN rm /etc/yum.repos.d/ubi.repo
 RUN KVER=$(ls /usr/lib/modules | strings) && \
     echo "D_KERNEL_VER=$KVER" >> /kernelver.env && \
-    echo "KVER=$KVER" >> /kernelver.env && 
+    echo "KVER=$KVER" >> /kernelver.env  
 ARG D_OFED_SRC_ARCHIVE="MLNX_OFED_SRC-${D_OFED_SRC_TYPE}${D_OFED_VERSION}.tgz"
 ARG D_OFED_URL_PATH="${D_OFED_BASE_URL}/${D_OFED_SRC_ARCHIVE}"  # although argument name says URL, local `*.tgz` compressed files may also be used (intended for internal use)
 
