@@ -80,7 +80,7 @@ COPY patches/pinctrl-mlxbf3-patch1.patch /build/rpmbuild/SOURCES
 
 RUN source /kernelver.env && \
   PACKAGE="sdhci-of-dwcmshc" && \
-  tar ---no-same-owner xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
+  tar --no-same-owner -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch $SRCDIR/sdhci.c < /build/rpmbuild/SOURCES/sdhci-of-dwcmshc-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
