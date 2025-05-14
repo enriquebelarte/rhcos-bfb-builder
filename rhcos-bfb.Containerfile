@@ -1,5 +1,5 @@
-ARG D_BASE_IMAGE=${BUILDER_IMAGE}
-ARG D_FINAL_BASE_IMAGE=${TARGET_IMAGE}
+ARG BUILDER_IMAGE
+ARG TARGET_IMAGE
 ARG D_OS
 ARG D_ARCH
 ARG D_CONTAINER_VER
@@ -9,7 +9,7 @@ ARG D_KERNEL_VER
 ARG D_OFED_SRC_DOWNLOAD_PATH
 ARG OFED_SRC_LOCAL_DIR
 
-FROM $D_BASE_IMAGE AS builder
+FROM BUILDER_IMAGE AS builder
 
 ARG D_OS
 ARG D_KERNEL_VER
@@ -24,7 +24,8 @@ ARG D_OFED_SRC_TYPE=""
 ARG D_SOC_BASE_URL="https://linux.mellanox.com/public/repo/doca/${D_DOCA_VERSION}/SOURCES/SoC"
 
 RUN rm /etc/yum.repos.d/ubi.repo
-
+RUN D_KERNEL_VER=$(ls /usr/lib/modules | strings) && \
+    echo "D_KERNEL_VER=$D_KERNEL_VER" >> /kernelver.env
 ARG D_OFED_SRC_ARCHIVE="MLNX_OFED_SRC-${D_OFED_SRC_TYPE}${D_OFED_VERSION}.tgz"
 ARG D_OFED_URL_PATH="${D_OFED_BASE_URL}/${D_OFED_SRC_ARCHIVE}"  # although argument name says URL, local `*.tgz` compressed files may also be used (intended for internal use)
 
@@ -49,6 +50,7 @@ RUN if file ${D_OFED_SRC_ARCHIVE} | grep compressed; then \
   fi
 
 RUN set -x && \
+  source /kernever.env && \
   perl -d ${OFED_SRC_LOCAL_DIR}/install.pl --without-depcheck --distro rhcos --kernel ${D_KERNEL_VER} --kernel-sources /lib/modules/${D_KERNEL_VER}/build \
   --kernel-only --build-only \
   --with-iser --with-srp --with-isert --with-knem --with-xpmem --fwctl \
@@ -97,7 +99,7 @@ RUN PACKAGE="pinctrl-mlxbf3" && \
 
 ######################################################################
 
-FROM ${D_FINAL_BASE_IMAGE} AS base
+FROM ${TARGET_IMAGE} AS base
 
 ARG D_OS
 ARG D_KERNEL_VER
