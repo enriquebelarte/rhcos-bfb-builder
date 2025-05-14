@@ -24,14 +24,15 @@ ARG D_OFED_SRC_TYPE=""
 ARG D_SOC_BASE_URL="https://linux.mellanox.com/public/repo/doca/${D_DOCA_VERSION}/SOURCES/SoC"
 
 RUN rm /etc/yum.repos.d/ubi.repo
-RUN D_KERNEL_VER=$(ls /usr/lib/modules | strings) && \
-    echo "D_KERNEL_VER=$D_KERNEL_VER" >> /kernelver.env
+RUN KVER=$(ls /usr/lib/modules | strings) && \
+    echo "D_KERNEL_VER=$KVER" >> /kernelver.env && \
+    echo "KVER=$KVER" >> /kernelver.env && 
 ARG D_OFED_SRC_ARCHIVE="MLNX_OFED_SRC-${D_OFED_SRC_TYPE}${D_OFED_VERSION}.tgz"
 ARG D_OFED_URL_PATH="${D_OFED_BASE_URL}/${D_OFED_SRC_ARCHIVE}"  # although argument name says URL, local `*.tgz` compressed files may also be used (intended for internal use)
 
 ENV NVIDIA_NIC_DRIVER_VER=${D_OFED_VERSION}
 ENV NVIDIA_NIC_CONTAINER_VER=${D_CONTAINER_VER}
-ENV NVIDIA_NIC_DRIVER_PATH="${D_OFED_SRC_DOWNLOAD_PATH}/MLNX_OFED_SRC-${D_OFED_VERSION}"
+
 
 WORKDIR /root
 
@@ -59,7 +60,7 @@ RUN set -x && \
 RUN mkdir -p /build/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 
 ENV HOME=/build
-ENV KVER=${D_KERNEL_VER}
+
 WORKDIR /root
 
 RUN SRPMS=("bluefield_edac" "tmfifo" "pwr-mlxbf" "mlxbf-ptm" "gpio-mlxbf3" "mlxbf-bootctl" "mlxbf-ptm" \
@@ -68,7 +69,8 @@ RUN SRPMS=("bluefield_edac" "tmfifo" "pwr-mlxbf" "mlxbf-ptm" "gpio-mlxbf3" "mlxb
   wget -r -np -nd -A rpm -e robots=off "${D_SOC_BASE_URL}/SRPMS" --accept-regex="$(IFS='|'; echo "(${SRPMS[*]/%/.+\.rpm})")" && \
   wget -r -np -nd -A tar.gz -e robots=off "${D_SOC_BASE_URL}/SOURCES" --accept-regex="$(IFS='|'; echo "(${TARBALLS[*]/%/.+\.tar\.gz})")"
 
-RUN for package in *.src.rpm; do \
+RUN source /kernelver.env && \
+    for package in *.src.rpm; do \
     rpmbuild --rebuild $package --define 'KMP 1' --define "KVERSION $KVER" --define "_sourcedir $(pwd)" --define "debug_package %{nil}" || exit 1; \
   done
 
@@ -76,21 +78,24 @@ COPY patches/sdhci-of-dwcmshc-patch1.patch /build/rpmbuild/SOURCES
 COPY patches/mlxbf-pka-patch1.patch /build/rpmbuild/SOURCES
 COPY patches/pinctrl-mlxbf3-patch1.patch /build/rpmbuild/SOURCES
 
-RUN PACKAGE="sdhci-of-dwcmshc" && \
+RUN source /kernelver.env && \
+  PACKAGE="sdhci-of-dwcmshc" && \
   tar -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch $SRCDIR/sdhci.c < /build/rpmbuild/SOURCES/sdhci-of-dwcmshc-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
   rpmbuild -ba $SRCDIR/*.spec --define 'KMP 1' --define "KVERSION $KVER" --define "_sourcedir $(pwd)" --define "debug_package %{nil}"
 
-RUN PACKAGE="mlxbf-pka" && \
+RUN source /kernelver.env && \
+  PACKAGE="mlxbf-pka" && \
   tar -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch $SRCDIR/pka_drv_mlxbf.c < /build/rpmbuild/SOURCES/mlxbf-pka-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
   rpmbuild -ba $SRCDIR/*.spec --define 'KMP 1' --define "KVERSION $KVER" --define "_sourcedir $(pwd)" --define "debug_package %{nil}"
 
-RUN PACKAGE="pinctrl-mlxbf3" && \
+RUN source /kernelver.env && \
+  PACKAGE="pinctrl-mlxbf3" && \
   tar -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch -p1 < /build/rpmbuild/SOURCES/pinctrl-mlxbf3-patch1.patch && \
