@@ -80,7 +80,7 @@ COPY patches/pinctrl-mlxbf3-patch1.patch /build/rpmbuild/SOURCES
 
 RUN source /kernelver.env && \
   PACKAGE="sdhci-of-dwcmshc" && \
-  tar --no-same-owner -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
+  tar -xvf $PACKAGE-*.tar.gz -o && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch $SRCDIR/sdhci.c < /build/rpmbuild/SOURCES/sdhci-of-dwcmshc-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
@@ -88,7 +88,7 @@ RUN source /kernelver.env && \
 
 RUN source /kernelver.env && \
   PACKAGE="mlxbf-pka" && \
-  tar --no-same-owner -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
+  tar -xvf $PACKAGE-*.tar.gz -o && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch $SRCDIR/pka_drv_mlxbf.c < /build/rpmbuild/SOURCES/mlxbf-pka-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
@@ -96,7 +96,7 @@ RUN source /kernelver.env && \
 
 RUN source /kernelver.env && \
   PACKAGE="pinctrl-mlxbf3" && \
-  tar --no-same-owner -xvf $PACKAGE-*.tar.gz && rm -f $PACKAGE-*.tar.gz && \
+  tar -xvf $PACKAGE-*.tar.gz -o && rm -f $PACKAGE-*.tar.gz && \
   SRCDIR=$(basename "$PACKAGE"*) && \
   patch -p1 < /build/rpmbuild/SOURCES/pinctrl-mlxbf3-patch1.patch && \
   tar -czf "${SRCDIR}.tar.gz" $SRCDIR && \
@@ -276,7 +276,7 @@ RUN \
   PACKAGE=$(curl ${D_UBUNTU_BASEURL} | grep -oP 'href="\Kdoca-dms[^"]+') && \
   curl -O "${D_UBUNTU_BASEURL}/${PACKAGE}" && \
   ar x $PACKAGE data.tar.zst && \
-  tar ---no-same-owner --keep-directory-symlink -xf data.tar.zst -C / && \
+  tar --keep-directory-symlink -xf data.tar.zst -C / && \
   rm -f $PACKAGE
   #
   # PACKAGE=$(curl ${D_UBUNTU_BASEURL} | grep -oP 'href="\Ksfc-hbn[^"]+') && \
