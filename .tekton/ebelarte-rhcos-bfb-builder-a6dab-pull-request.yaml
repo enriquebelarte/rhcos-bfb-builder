@@ -18,6 +18,10 @@ metadata:
   name: ebelarte-rhcos-bfb-builder-a6dab-on-pull-request
   namespace: rh-ecosystem-tenant
 spec:
+  timeouts:
+    pipeline: "5h"
+    tasks: "3h"
+    finally: "3h"
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -214,6 +218,7 @@ spec:
           value:
           - $(params.build-platforms)
       name: build-images
+      timeout: 3h
       params:
       - name: IMAGE
         value: $(params.output-image)
